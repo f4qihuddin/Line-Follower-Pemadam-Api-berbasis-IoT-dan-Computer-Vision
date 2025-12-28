@@ -2,11 +2,11 @@
 #include <PubSubClient.h>
 
 /* ================= WIFI ================= */
-const char* ssid = "Galaxy A206443";
-const char* password = "vexx7191";
+const char* ssid = "(nama wifi)";
+const char* password = "(password wifi)";
 
 /* ================= MQTT ================= */
-const char* mqtt_server = "10.73.95.50";
+const char* mqtt_server = "(ip adress)";
 const int mqtt_port = 1883;
 const char* topic_target = "fire/detection";
 
