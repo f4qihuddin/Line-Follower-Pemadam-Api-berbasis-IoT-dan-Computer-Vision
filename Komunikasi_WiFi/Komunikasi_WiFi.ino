@@ -6,7 +6,7 @@ const char* ssid = "(nama wifi)";
 const char* password = "(password wifi)";
 
 /* ================= MQTT ================= */
-const char* mqtt_server = "(ip adress)";
+const char* mqtt_server = "(ip adress broker)";
 const int mqtt_port = 1883;
 const char* topic_target = "fire/detection";
 
