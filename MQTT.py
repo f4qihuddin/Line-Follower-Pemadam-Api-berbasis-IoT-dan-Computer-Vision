@@ -1,20 +1,55 @@
-import paho.mqtt.client as mqtt # type: ignore
+import cv2
+import numpy as np
+import paho.mqtt.client as mqtt
+import time
 
-# Konfigurasi MQTT
-broker = "10.47.90.50" # Ganti dengan broker MQTT Anda
-port = 1883 # Default MQTT port
-topic = "test/topic" # Topik yang digunakan untuk berkomunikasi
+# MQTT config
+BROKER = ""   # IP broker
+PORT = 1883
+TOPIC = "fire/detection"
 
-# Fungsi untuk mengirim pesan
-def publish_message(message):
-  client = mqtt.Client()
-  client.connect(broker, port, 60)
-  client.publish(topic, message)
-  print(f"Pesan '{message}' telah dikirim ke topik '{topic}'")
-  client.loop(1)
-  client.disconnect()
+client = mqtt.Client()
+client.connect(BROKER, PORT, 60)
+client.loop_start()
 
-# Contoh penggunaan
-if __name__ == "__main__":
-  message = "OFF" # Ganti sesuai perintah yang diinginkan
-  publish_message(message)
+cap = cv2.VideoCapture(0)
+
+fire_detected = False
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    # Range warna api (2 range merah)
+    lower1 = np.array([0, 120, 70])
+    upper1 = np.array([10, 255, 255])
+    lower2 = np.array([170, 120, 70])
+    upper2 = np.array([180, 255, 255])
+
+    mask1 = cv2.inRange(hsv, lower1, upper1)
+    mask2 = cv2.inRange(hsv, lower2, upper2)
+    mask = mask1 + mask2
+
+    fire_pixels = cv2.countNonZero(mask)
+
+    if fire_pixels > 3000:
+        if not fire_detected:
+            print("🔥 API TERDETEKSI")
+            client.publish(TOPIC, "FIRE")
+            fire_detected = True
+    else:
+        if fire_detected:
+            print("✅ TIDAK ADA API")
+            client.publish(TOPIC, "NO_FIRE")
+            fire_detected = False
+
+    cv2.imshow("Fire Detection", mask)
+    if cv2.waitKey(1) & 0xFF == 27:
+        break
+
+cap.release()
+cv2.destroyAllWindows()
+client.disconnect()
